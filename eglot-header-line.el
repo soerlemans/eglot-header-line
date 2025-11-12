@@ -1,11 +1,11 @@
-;;; eglot-headerline.el --- Major mode for the Crow programming language.
+;;; eglot-header-line.el --- Major mode for the Crow programming language.
 ;; -*- coding: utf-8; lexical-binding: t -*-
 
 ;; Copyright (C) 2025  soerlemans
 
 ;; Author: soerlemans <https://github.com/soerlemans>
 ;; Keywords: languages crow
-;; URL: https://github.com/soerlemans/eglot-headerline
+;; URL: https://github.com/soerlemans/eglot-header-line
 ;;
 ;; This file is not part of GNU Emacs.
 
@@ -75,7 +75,7 @@
 ;;	 export const Operator = 25;
 ;;	 export const TypeParameter = 26;|
 ;; }
-(defun eglot-headerline--symbol-kind-to-face (kind)
+(defun eglot-header-line--symbol-kind-to-face (kind)
 	"Match a given symbol kind to a font lock face."
 	(pcase kind
 		(3  'font-lock-constant-face)
@@ -90,7 +90,7 @@
 		(_ 'default) ; Default
 		))
 
-(defun eglot-headerline--swap-face (face)
+(defun eglot-header-line--swap-face (face)
   "Return a face spec like FACE but with foreground and background swapped."
   (let ((fg (face-foreground face nil 'default))
         (bg (face-background face nil 'default))
@@ -98,14 +98,14 @@
     `(:foreground ,bg :background ,fg, :weight ,bold)
 		))
 
-(defun eglot-headerline--propertize (str kind)
+(defun eglot-header-line--propertize (str kind)
 	"Utility function for fixing the FACE and properly propertizing a string."
-	(let* ((face (eglot-headerline--symbol-kind-to-face kind))
-				 (hl-face (eglot-headerline--swap-face face)))
+	(let* ((face (eglot-header-line--symbol-kind-to-face kind))
+				 (hl-face (eglot-header-line--swap-face face)))
 		(propertize str 'face hl-face)
 		))
 
-(defun eglot-headerline--documentSymbol ()
+(defun eglot-header-line--documentSymbol ()
   "Return the list of symbols from the current buffer via Eglot."
 	(let ((server (eglot--current-server-or-lose)))
 		(eglot--request
@@ -115,7 +115,7 @@
 		))
 
 
-(defun eglot-headerline--symbol-at-point (symbols)
+(defun eglot-header-line--symbol-at-point (symbols)
 	"Return list of symbol names containing point, using SYMBOLS tree."
 	(interactive)
 	(let (path '())
@@ -130,9 +130,9 @@
 													(kind (plist-get symbol :kind)))
 										 (when (and (>= (point) start) (<= (point) end))
 											 ;; Add the symbols name if our point is between its start and end.
-											 (let* ((face (eglot-headerline--symbol-kind-to-face kind))
-															(name-prop (eglot-headerline--propertize name kind))
-															(sep-prop (eglot-headerline--propertize "::" t))
+											 (let* ((face (eglot-header-line--symbol-kind-to-face kind))
+															(name-prop (eglot-header-line--propertize name kind))
+															(sep-prop (eglot-header-line--propertize "::" t))
 															(spacer-prop (propertize " " 'display '(space :width 0.65))))
 
 												 ;; Necessary to only separators spacers inbetween items.
@@ -143,7 +143,7 @@
 												 (if children
 														 (walk children) ; True.
 													 (when-let* ((detail (plist-get symbol :detail)) ; False.
-																			 (detail-prop (eglot-headerline--propertize detail t)))
+																			 (detail-prop (eglot-header-line--propertize detail t)))
 														 (push spacer-prop path)
 														 (push "|" path)
 														 (push spacer-prop path)
@@ -155,22 +155,35 @@
 		(nreverse path)
 		))
 
-(defun eglot-headerline--breadcrumb ()
+(defun eglot-header-line--breadcrumb ()
 	"Compute the breadcrumb for the current context, of POINT."
-	(when-let ((symbols (eglot-headerline--documentSymbol)))
-		(let* ((path (eglot-headerline--symbol-at-point symbols))
+	(when-let ((symbols (eglot-header-line--documentSymbol)))
+		(let* ((path (eglot-header-line--symbol-at-point symbols))
 					 (spacer-prop (propertize " " 'display '(space :width 1.3))))
-			(list spacer-prop path)
+			(list spacer-prop path) ;; We add a spacer for subjective beauty.
 			)))
 
-(defun eglot-headerline--hook ()
-	"Hooking function to add and remove."
-	(setq-local header-line-format (eglot-headerline--breadcrumb)))
+;; TODO: Implement not overwriting existing headerline..
+(defun eglot-header-line--add ()
+	(interactive)
+	(setq-local header-line-format
+							'((:eval (eglot-header-line--breadcrumb)) header-line-format))
+	)
 
-(defun enable-eglot-headerline ()
+(defun eglot-header-line--remove ()
+	)
+
+(defun eglot-header-line--hook ()
+	"Hooking function to add and remove."
+	;; (setq-local header-line-format (eglot-header-line--breadcrumb))
+	(eglot-header-line--add)
+
+	)
+
+(defun enable-eglot-header-line ()
 	"Enable the eglot headerline."
 	(interactive)
-	(add-hook 'post-command-hook #'eglot-headerline--hook nil t)
+	(add-hook 'post-command-hook #'eglot-header-line--hook nil t)
 
 	;; Invert default header-line look.
 	;; Headerline foreground and background are default inverted.
@@ -184,10 +197,10 @@
 												))
 	)
 
-(defun disable-eglot-headerline ()
+(defun disable-eglot-header-line ()
 	"Disable the eglot headerline."
 	(interactive)
-	(remove-hook 'post-command-hook #'eglot-headerline--hook t)
+	(remove-hook 'post-command-hook #'eglot-header-line--hook t)
 	(setq-local header-line-format '())
 
 	;; Neatly reset the face.
@@ -203,13 +216,13 @@
 	)
 
 ;;; Define minor mode:
-(define-minor-mode eglot-headerline-mode
+(define-minor-mode eglot-header-line-mode
 	"Toggle the highlighting of the current namespace/class/function in the headerline."
 	:lighter "Toggle the highlighting of the current function in the header-line."
-	(if eglot-headerline-mode
-			(enable-eglot-headerline)
-		(disable-eglot-headerline)
+	(if eglot-header-line-mode
+			(enable-eglot-header-line)
+		(disable-eglot-header-line)
 		))
 
-(provide 'eglot-headerline-mode)
-;;; eglot-headerline.el ends here
+(provide 'eglot-header-line-mode)
+;;; eglot-header-line.el ends here
