@@ -205,27 +205,24 @@
 (defun eglot-header-line-enable ()
 	"Enable the eglot headerline."
 	(interactive)
-  (unless eglot-header-line-mode
-		(eglot-header-line--add-segment)
+  ;;(unless eglot-header-line-mode
+	(eglot-header-line--add-segment)
 
-		;; Invert default header-line look.
-		;; Headerline foreground and background are default inverted.
-		(let ((fg (face-foreground 'default))
-					(bg (face-background 'default)))
-			(set-face-attribute 'header-line nil
-													:foreground bg
-													:background fg
-													:height 1.0
-													:box  `(:line-width 1 :color ,fg :style nil)
-													))
-
-		(setq eglot-header-line-mode t)
+	;; Invert default header-line look.
+	;; Headerline foreground and background are default inverted.
+	(let ((fg (face-foreground 'default))
+				(bg (face-background 'default)))
+		(set-face-attribute 'header-line nil
+												:foreground bg
+												:background fg
+												:height 1.0
+												:box  `(:line-width 1 :color ,fg :style nil)
+												)
 		))
 
 (defun eglot-header-line-disable ()
 	"Disable the eglot headerline."
 	(interactive)
-  (when eglot-header-line-mode
 		(eglot-header-line--remove-segment)
 
 		;; Neatly reset the face.
@@ -238,9 +235,7 @@
 												:slant 'unspecified
 												:height 'unspecified
 												:font 'unspecified)
-
-		(setq eglot-header-line-mode nil)
-		))
+		)
 
 
 (provide 'eglot-header-line-mode)
