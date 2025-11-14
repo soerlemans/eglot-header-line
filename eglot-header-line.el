@@ -95,23 +95,13 @@
 		(12 'font-lock-function-name-face)
 		(23 'font-lock-type-face)
 
-		;; (t 'font-lock-keyword-face) ; Default
-		(_ 'default) ; Default
-		))
-
-(defun eglot-header-line--swap-face (face)
-  "Return a face spec like FACE but with foreground and background swapped."
-  (let ((fg (face-foreground face nil 'default))
-        (bg (face-background face nil 'default))
-				(bold (face-bold-p face)))
-    `(:foreground ,bg :background ,fg, :weight ,bold)
+		(_ 'font-lock-operator-face) ; Default
 		))
 
 (defun eglot-header-line--propertize (str kind)
 	"Utility function for fixing the FACE and properly propertizing a string."
-	(let* ((face (eglot-header-line--symbol-kind-to-face kind))
-				 (hl-face (eglot-header-line--swap-face face)))
-		(propertize str 'face hl-face)
+	(let* ((face (eglot-header-line--symbol-kind-to-face kind)))
+		(propertize str 'face face)
 		))
 
 (defun eglot-header-line--separator-for-current-mode ()
@@ -204,39 +194,11 @@
 
 (defun eglot-header-line-enable ()
 	"Enable the eglot headerline."
-	(interactive)
-  ;;(unless eglot-header-line-mode
-	(eglot-header-line--add-segment)
-
-	;; Invert default header-line look.
-	;; Headerline foreground and background are default inverted.
-	(let ((fg (face-foreground 'default))
-				(bg (face-background 'default)))
-		(set-face-attribute 'header-line nil
-												:foreground bg
-												:background fg
-												:height 1.0
-												:box  `(:line-width 1 :color ,fg :style nil)
-												)
-		))
+	(eglot-header-line--add-segment))
 
 (defun eglot-header-line-disable ()
 	"Disable the eglot headerline."
-	(interactive)
-		(eglot-header-line--remove-segment)
-
-		;; Neatly reset the face.
-		(set-face-attribute 'header-line nil
-												:foreground 'unspecified
-												:background 'unspecified
-												:weight 'unspecified
-												:box 'unspecified
-												:underline 'unspecified
-												:slant 'unspecified
-												:height 'unspecified
-												:font 'unspecified)
-		)
-
+	(eglot-header-line--remove-segment))
 
 (provide 'eglot-header-line-mode)
 ;;; eglot-header-line.el ends here
