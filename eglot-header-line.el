@@ -184,21 +184,23 @@
 
 ;;; Define minor mode:
 (define-minor-mode eglot-header-line-mode
-	"Toggle the highlighting of the current namespace/class/function in the headerline."
-	:lighter "Toggle the highlighting of the current function in the header-line."
+	"Show breadcrumb information in the header-line using eglot."
+	:lighter "Show breadcrumb information in the header-line using eglot."
   :init-value nil
 	(if eglot-header-line-mode
-			(eglot-header-line-enable)
-		(eglot-header-line-disable)
+			(eglot-header-line--add-segment)
+		(eglot-header-line--remove-segment)
 		))
 
 (defun eglot-header-line-enable ()
-	"Enable the eglot headerline."
-	(eglot-header-line--add-segment))
+	"Enable the eglot header-line."
+	(interactive)
+	(eglot-header-line-mode 1))
 
 (defun eglot-header-line-disable ()
-	"Disable the eglot headerline."
-	(eglot-header-line--remove-segment))
+	"Disable the eglot header-line."
+	(interactive)
+	(eglot-header-line-mode -1))
 
 (provide 'eglot-header-line-mode)
 ;;; eglot-header-line.el ends here
